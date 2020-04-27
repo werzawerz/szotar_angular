@@ -1,18 +1,27 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-
+import { HttpClientModule, HttpClientJsonpModule } from '@angular/common/http';
 import { AppRoutingModule } from './app-routing.module';
-import { AppComponent } from './app.component';
+import { HomeComponent } from './components/home/home.component';
+import { ForditoComponent } from './components/fordito/fordito.component';
+import { SzinonimakComponent } from './components/szinonimak/szinonimak.component';
+import { ForditoService}  from './service/fordito.service';
+import { CommonModule } from "@angular/common";
 
 @NgModule({
   declarations: [
-    AppComponent
+    HomeComponent,
+    ForditoComponent,
+    SzinonimakComponent
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule
+    AppRoutingModule,
+    HttpClientModule,
+    HttpClientJsonpModule,
+    CommonModule
   ],
-  providers: [],
-  bootstrap: [AppComponent]
+  providers: [ForditoService],
+  bootstrap: [HomeComponent]
 })
 export class AppModule { }
