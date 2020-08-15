@@ -1,111 +1,78 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Forditas } from '../models/forditas';
 import { Szo } from '../models/szo';
-import { Nyelv } from '../models/nyelv'
+import { ResponseJson } from '../models/responseJson';
 import { Observable, throwError, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ForditoService {
 
-  private nyelvParokObs : Observable<string[]>;
+  private forditasObs : Observable<ResponseJson>;
   private APIKey : string;
-  private URL : string;
-  private nyelvParosok : string[];
-  private nyelvek : Nyelv[];
-  private roviditesNyelvOsszerendeles : Map<string, string>;
+  private szofajAngolMagyar : Map<string, string>;
+  private forditasok : Szo[];
 
+  /**
+   * Konstuktor, beállítja a Yandex API használtához a kulcsot, valamint a lent látható függvényeket meghívja,
+   * melyeknek a funkciójuk a kommenteknél megtalálható.
+   * @param http : az HTTP-n keresztül végzett műveletek (pl. API kérés)-ért felelős objektum, ez inicializálva van itt
+   */
   constructor(private http: HttpClient) {
-    this.createOsszerendelesMap();
-    this.load();
-    this.nyelvParokObs.subscribe(
-      data => { this.nyelvParosok = data;
-         this.createNyelvek()
-      }
-    )
-  }
-
-  private createOsszerendelesMap() {
-    this.roviditesNyelvOsszerendeles = new Map<string, string>();
-    this.roviditesNyelvOsszerendeles.set("be", "Fehérorosz");
-    this.roviditesNyelvOsszerendeles.set("bg", "Bolgár");
-    this.roviditesNyelvOsszerendeles.set("cs", "Cseh");
-    this.roviditesNyelvOsszerendeles.set("da", "Dán");
-    this.roviditesNyelvOsszerendeles.set("de", "Német");
-    this.roviditesNyelvOsszerendeles.set("el", "Görög");
-    this.roviditesNyelvOsszerendeles.set("en", "Angol");
-    this.roviditesNyelvOsszerendeles.set("es", "Spanyol");
-    this.roviditesNyelvOsszerendeles.set("et", "Észt");
-    this.roviditesNyelvOsszerendeles.set("fi", "Finn");
-    this.roviditesNyelvOsszerendeles.set("fr", "Francia");
-    this.roviditesNyelvOsszerendeles.set("hu", "Magyar");
-    this.roviditesNyelvOsszerendeles.set("it", "Olasz");
-    this.roviditesNyelvOsszerendeles.set("lt", "Litván");
-    this.roviditesNyelvOsszerendeles.set("lv", "Lett");
-    this.roviditesNyelvOsszerendeles.set("mhr", "Mari");
-    this.roviditesNyelvOsszerendeles.set("mrj", "Kelet-Mari");
-    this.roviditesNyelvOsszerendeles.set("nl", "Holland");
-    this.roviditesNyelvOsszerendeles.set("no", "Norvég");
-    this.roviditesNyelvOsszerendeles.set("pl", "Lengyel");
-    this.roviditesNyelvOsszerendeles.set("pt", "Portugál");
-    this.roviditesNyelvOsszerendeles.set("ru", "Orosz");
-    this.roviditesNyelvOsszerendeles.set("sk", "Szlovák");
-    this.roviditesNyelvOsszerendeles.set("sv", "Szlovén");
-    this.roviditesNyelvOsszerendeles.set("tr", "Török");
-    this.roviditesNyelvOsszerendeles.set("tt", "Tatár");
-    this.roviditesNyelvOsszerendeles.set("uk", "Ukrán");
-    this.roviditesNyelvOsszerendeles.set("zh", "Kínai");
-  }
-
-  public getNyelvparokObs() {
-    return this.nyelvParokObs.pipe(delay(200));
-  }
-
-  public getNyelvek() {
-    return of(this.nyelvek).pipe(delay(200));
-  }
-
-  private load() {
+    this.createSzofajAngolMagyar();
     this.APIKey = "dict.1.1.20200426T130216Z.61527981c0f1a22a.f958a865360ce0433ddadd516bd1fac3ee22d223";
-    this.URL = "https://dictionary.yandex.net/api/v1/dicservice.json/getLangs?key=" + this.APIKey;
-    this.nyelvParokObs = this.http.get<string[]>(this.URL);
-  }  
-
-  private createNyelvek() {
-    this.nyelvek = [];
-    this.roviditesNyelvOsszerendeles.forEach((value : string, key : string) => {
-      var ujNyelv = {nev : value,
-        rovidites : key,
-        ismertNyelvek : []}
-      this.nyelvek.push(ujNyelv);
-    })
-
-    this.nyelvParosok.forEach((par) => {
-      var forrasNyelvStr = par.split('-')[0];
-      var celNyelvStr = par.split('-')[1];
-      if(this.roviditesNyelvOsszerendeles.get(forrasNyelvStr)==null || this.roviditesNyelvOsszerendeles.get(celNyelvStr)==null) {
-        console.log("Ez a nyelv nincs benne a mapben " + forrasNyelvStr + " " + celNyelvStr);
-      }
-      else {
-        var forrasNyelv = this.getNyelvByRovidites(forrasNyelvStr);
-        var celNyelv = this.getNyelvByRovidites(celNyelvStr);
-        forrasNyelv.ismertNyelvek.push(celNyelv);
-      }
-    })
   }
 
-  private getNyelvByRovidites(rovidites : string) {
-    for(let nyelv of this.nyelvek) {
-      if(nyelv.rovidites==rovidites) {
-        return nyelv;
+  /**
+   * A szófajok angolról magyarra való fordítása.
+   */
+  public createSzofajAngolMagyar() {
+    this.szofajAngolMagyar = new Map<string, string>();
+    this.szofajAngolMagyar.set("noun", "főnév");
+    this.szofajAngolMagyar.set("verb", "ige");
+    this.szofajAngolMagyar.set("conjunction", "kötőszó");
+    this.szofajAngolMagyar.set("adjective", "melléknév");
+    this.szofajAngolMagyar.set("numeral", "számnév");
+    this.szofajAngolMagyar.set("pronoun", "névmás");
+    this.szofajAngolMagyar.set("adverb", "határozószó");
+    this.szofajAngolMagyar.set("preposition", "névelő");
+  }
+ 
+  /**
+   * A Yandex API segítségével, lekéri a paraméterben kapott párosítás fordításait.
+   * @param szo Forditas típusú adat, melyben megtalálható a forrás- és célnyelv, valamint a fordítandó szó.
+   */
+  public createForditas(szo : Forditas) {
+    this.forditasok = [];
+    var forrasRovidites = szo.forrasNyelv.rovidites;
+    var celRovidites = szo.celNyelv.rovidites;
+    var URL = "https://dictionary.yandex.net/api/v1/dicservice.json/lookup?key=" +
+      this.APIKey + 
+      "&lang=" +
+      forrasRovidites + "-" + celRovidites +
+      "&text=" + szo.szo;
+    this.forditasObs = this.http.get<ResponseJson>(URL);
+    this.forditasObs.subscribe(data =>  {
+      console.log(data)
+      var id = 0;
+      for(let definition of data.def) {
+        for(let translation of definition.tr) {
+          var szofajMagyar = this.szofajAngolMagyar.get(translation.pos);
+          var leforditottSzo = {id : id, nyelv: szo.celNyelv.nev, text : translation.text, szofaj : szofajMagyar}
+          id++;
+          this.forditasok.push(leforditottSzo);
+        }
       }
-    }
-    return {nev : "",
-      rovidites : "",
-      ismertNyelvek : []}
+    });
   }
 
-  
+  /**
+   * Visszaadja az API kérés által létrehozott fordításokat.
+   */
+  public getForditasok() {
+    return this.forditasok;
+  }
+
 }

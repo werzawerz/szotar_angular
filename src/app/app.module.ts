@@ -1,27 +1,36 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import { HttpClientModule, HttpClientJsonpModule } from '@angular/common/http';
+import { HttpClientModule, HttpClientJsonpModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AppRoutingModule } from './app-routing.module';
 import { HomeComponent } from './components/home/home.component';
 import { ForditoComponent } from './components/fordito/fordito.component';
-import { SzinonimakComponent } from './components/szinonimak/szinonimak.component';
 import { ForditoService}  from './service/fordito.service';
-import { CommonModule } from "@angular/common";
+import { NyelvService}  from './service/nyelv.service';
+import { FormsModule } from '@angular/forms';
+import { HttpErrorInterceptor } from './service/http-error.interceptor';
+import { NavingComponent } from './components/naving/naving.component';
 
 @NgModule({
   declarations: [
     HomeComponent,
     ForditoComponent,
-    SzinonimakComponent
+    NavingComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
     HttpClientJsonpModule,
-    CommonModule
+    FormsModule
   ],
-  providers: [ForditoService],
-  bootstrap: [HomeComponent]
+  providers: [ForditoService,
+    NyelvService,
+    {
+    provide: HTTP_INTERCEPTORS,
+    useClass: HttpErrorInterceptor,
+    multi: true
+    }
+  ],
+  bootstrap: [NavingComponent]
 })
 export class AppModule { }

@@ -1,14 +1,14 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { HomeComponent } from './components/home/home.component';
 import { ForditoComponent } from './components/fordito/fordito.component';
-import { SzinonimakComponent } from './components/szinonimak/szinonimak.component' 
+import { HomeComponent } from './components/home/home.component';
+import { NavingComponent } from './components/naving/naving.component';
 
 
 const routes: Routes = [
   {path: "fordito", component: ForditoComponent},
-  {path: "szinonimak", component: SzinonimakComponent},
-  {path: "", component: HomeComponent, pathMatch:'full'}
+  {path: "", redirectTo: "home", pathMatch:'full'},
+  {path: "home", component: HomeComponent}
 ];
 
 @NgModule({

@@ -1,6 +1,6 @@
 <div class = "fordito-container">
     <div class = "row">
-        <div class = "col-8">
+        <div class = "col-6">
             <h2>Fordítás</h2>
             <div class="data">
                 <table class="table table-striped table-bordered">
@@ -9,7 +9,7 @@
                             Forrásnyelv:
                         </th>
                         <th>
-                            <select class="selectpicker">    
+                            <select class="selectpicker" [(ngModel)]="forrasNyelvStr" (change)="createCelNyelvek()">  
                                 <option *ngFor="let nyelv of (nyelvekObs | async)">
                                     {{nyelv.nev}}
                                 </option>                              
@@ -21,9 +21,10 @@
                             Célnyelv:
                         </th>
                         <th>
-                            <select class="selectpicker" id="celnyelv">
-                                <option>Magyar</option>
-                                <option>Angol</option>
+                            <select class="selectpicker" [(ngModel)]="celNyelvStr" (change)="createCelNyelv()">    
+                                <option *ngFor="let nyelv of (celNyelvOpciok | async)">
+                                    {{nyelv.nev}}
+                                </option>                              
                             </select>
                         </th>
                     </tr>
@@ -33,9 +34,11 @@
                         </th>
                         <th>
                             <div class="input-group">
-                                <input class="form-control py-2 border-right-0 border" type="text" id="forditando-szo">
+                                <input class="form-control py-2 border-right-0 border" type="text" [(ngModel)]="forditandoSzo.szo">
                                 <span class="input-group-append">
-                                    <button type="button" class="btn btn-dark">Fordít</button>
+                                    <button type="button" class="btn btn-dark" (click)="fordit()"  [disabled]="somethingEmpty()">
+                                        Fordít
+                                    </button>
                                 </span>
                             </div>
                         </th>
@@ -45,11 +48,47 @@
                             Forditás:
                         </th>
                         <th>
-                            idk
+                            <div *ngIf="(forditasok | async)?.length==0">Nem találtuk a fordítását</div>
+                            <ul>
+                                <li *ngFor="let forditas of (forditasok | async)" (click)="wordWithDetails = forditas">
+                                    <h6 class="forditas">{{forditas.text}}</h6>
+                                </li> 
+                            </ul>                         
                         </th>
                     </tr>
                 </table>
                 
+            </div>
+        </div>
+        <div class = "col-6" *ngIf="wordWithDetails">
+            <h3>Részletek</h3>
+            <div class="data">
+                <table class="table table-striped table-bordered">
+                    <tr>
+                        <th>
+                            Szó:
+                        </th>
+                        <th>
+                            {{wordWithDetails.text}}
+                        </th>
+                    </tr>
+                    <tr>
+                        <th>
+                            Nyelv:
+                        </th>
+                        <th>
+                            {{wordWithDetails.nyelv}}
+                        </th>
+                    </tr>
+                    <tr>
+                        <th>
+                            Szófaj:
+                        </th>
+                        <th>
+                            {{wordWithDetails.szofaj}}
+                        </th>
+                    </tr>
+                </table>
             </div>
         </div>
     </div>

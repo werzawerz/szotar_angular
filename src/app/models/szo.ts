@@ -1,4 +1,6 @@
 export interface Szo {
-    szo : string,
-    nyelv : string
+    id : number,
+    nyelv : string,
+    text : string,
+    szofaj : string
 }
